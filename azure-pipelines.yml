@@ -54,33 +54,33 @@ stages:
               artifactName: 'Android_APK'
             displayName: 'Publish APK artifact'
 
-  - stage: BuildiOS
-    displayName: "Build iOS App"
-    dependsOn: InstallDependencies
-    jobs:
-      - job: iOSBuild
-        pool:
-          name: 'YourMacAgentPool'  # Replace with your self-hosted macOS agent pool
-        steps:
-          - script: |
-              cd ios
-              pod install
-            displayName: 'Install CocoaPods'
+  # - stage: BuildiOS
+  #   displayName: "Build iOS App"
+  #   dependsOn: InstallDependencies
+  #   jobs:
+  #     - job: iOSBuild
+  #       pool:
+  #         name: 'YourMacAgentPool'  # Replace with your self-hosted macOS agent pool
+  #       steps:
+  #         - script: |
+  #             cd ios
+  #             pod install
+  #           displayName: 'Install CocoaPods'
 
-          - task: Xcode@5
-            inputs:
-              actions: 'build'
-              scheme: 'YourAppScheme'  # Replace with your Xcode scheme
-              sdk: 'iphoneos'
-              configuration: 'Release'
-              xcWorkspacePath: 'ios/YourApp.xcworkspace'
-              signingOption: 'manual'
-              signingIdentity: '$(SIGNING_IDENTITY)'
-              provisioningProfileUuid: '$(PROVISIONING_PROFILE_UUID)'
-            displayName: 'Build iOS App'
+  #         - task: Xcode@5
+  #           inputs:
+  #             actions: 'build'
+  #             scheme: 'YourAppScheme'  # Replace with your Xcode scheme
+  #             sdk: 'iphoneos'
+  #             configuration: 'Release'
+  #             xcWorkspacePath: 'ios/YourApp.xcworkspace'
+  #             signingOption: 'manual'
+  #             signingIdentity: '$(SIGNING_IDENTITY)'
+  #             provisioningProfileUuid: '$(PROVISIONING_PROFILE_UUID)'
+  #           displayName: 'Build iOS App'
 
-          - task: PublishBuildArtifacts@1
-            inputs:
-              pathToPublish: 'ios/build'
-              artifactName: 'iOS_App'
-            displayName: 'Publish iOS artifact'
+  #         - task: PublishBuildArtifacts@1
+  #           inputs:
+  #             pathToPublish: 'ios/build'
+  #             artifactName: 'iOS_App'
+  #           displayName: 'Publish iOS artifact'
