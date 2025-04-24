@@ -37,10 +37,10 @@ stages:
          ## - task: Gradle@2
           - task: Gradle@3
             inputs:
-             ## workingDirectory: 'android'
-              workingDirectory: 'node_modules/react-native/template/android'
-             ## gradleWrapperFile: 'android/gradlew'
-              gradleWrapperFile: 'node_modules/react-native/template/android/gradlew'
+              workingDirectory: 'android'
+              ##workingDirectory: 'node_modules/react-native/template/android'
+              gradleWrapperFile: 'android/gradlew'
+              ##gradleWrapperFile: 'node_modules/react-native/template/android/gradlew'
               gradleOptions: '-Xmx3072m'
               tasks: 'assembleRelease'
             displayName: 'Assemble Android APK'
