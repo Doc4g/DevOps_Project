@@ -46,13 +46,13 @@ stages:
           #   displayName: 'Assemble Android APK'
 
     # Corrected Gradle task
-          - task: Gradle@3  # Use the latest Gradle version
-            inputs:
-              workingDirectory: '$(Build.SourcesDirectory)/android'  # Specify the relative path to the android folder
-              gradleWrapperFile: '$(Build.SourcesDirectory)/android/gradlew'  # Full relative path to gradlew
-              gradleOptions: '-Xmx3072m'
-              tasks: 'assembleRelease'
-            displayName: 'Assemble Android APK'
+          # - task: Gradle@3  # Use the latest Gradle version
+          #   inputs:
+          #     workingDirectory: '$(Build.SourcesDirectory)/android'  # Specify the relative path to the android folder
+          #     gradleWrapperFile: '$(Build.SourcesDirectory)/android/gradlew'  # Full relative path to gradlew
+          #     gradleOptions: '-Xmx3072m'
+          #     tasks: 'assembleRelease'
+          #   displayName: 'Assemble Android APK'
 
 
           - task: CopyFiles@2
