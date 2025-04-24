@@ -6,15 +6,14 @@
 trigger:
   branches:
     include:
-      - main  # Change to your release branch
+      - main
 
 stages:
   - stage: InstallDependencies
-    #displayName: "Install Node and Yarn Dependencies"
     jobs:
       - job: Install
         pool:
-          vmImage: 'macos-latest'  # macOS can build both Android and iOS
+          name: Default
         steps:
           - task: NodeTool@0
             inputs:
@@ -32,7 +31,7 @@ stages:
     jobs:
       - job: AndroidBuild
         pool:
-          vmImage: 'macos-latest'
+          name: Default
         steps:
           - task: Gradle@2
             inputs:
