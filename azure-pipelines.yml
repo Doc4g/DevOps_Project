@@ -8,79 +8,76 @@ trigger:
     include:
       - main
 stages:
-  - stage: InstallDependencies
+  - stage: DiagnoseProject
     jobs:
-      - job: Install
-        pool:
-          name: Default
-        steps:
-          - task: NodeTool@0
-            inputs:
-              versionSpec: '18.x'
-            displayName: 'Install Node.js'
-          - script: |
-              npm install -g yarn
-              yarn install
-            displayName: 'Install yarn dependencies'
-          - script: |
-              dir
-              echo "Checking if android directory exists..."
-              if exist android (
-                cd android
-                dir
-              ) else (
-                echo "android directory not found!"
-              )
-            displayName: 'Check directory structure'
-  - stage: BuildAndroid
-    displayName: "Build Android App"
-    dependsOn: InstallDependencies
-    jobs:
-      - job: AndroidBuild
+      - job: InspectFiles
         pool:
           name: Default
         steps:
           - script: |
+              echo "Current working directory:"
+              cd
+              echo "Listing root directory contents:"
               dir
-              echo "Checking if android directory exists..."
+              echo "Searching for gradlew files:"
+              dir /s /b gradlew
+              echo "Searching for android directory:"
+              dir /s /b | findstr /i "\\android$"
+            displayName: 'Inspect project structure'
+          - script: |
+              echo "Checking React Native project structure:"
+              if exist package.json (
+                echo "This appears to be a React Native project root"
+                type package.json | findstr "react-native"
+              )
+            displayName: 'Verify React Native project'
+  - stage: SetupAndroid
+    dependsOn: DiagnoseProject
+    jobs:
+      - job: PrepareAndroid
+        pool:
+          name: Default
+        steps:
+          - script: |
+              echo "Creating Android directory if it doesn't exist:"
+              if not exist android (
+                echo "Android directory not found, creating it..."
+                mkdir android
+              )
+              
+              echo "Checking if this is a React Native project:"
+              if exist package.json (
+                echo "Attempting to create/regenerate Android project:"
+                npx react-native init temp_project --template react-native@latest
+                echo "Copying gradlew files from template:"
+                xcopy /E /I /Y temp_project\android\gradlew android\
+                xcopy /E /I /Y temp_project\android\gradle android\gradle\
+                xcopy /E /I /Y temp_project\android\gradlew.bat android\
+                rd /s /q temp_project
+              )
+              
+              echo "Checking Android directory after setup:"
               if exist android (
                 cd android
                 dir
-                if not exist gradlew (
-                  echo "gradlew not found, attempting to generate wrapper..."
-                  gradle wrapper
-                )
-              ) else (
-                echo "android directory not found!"
               )
-            displayName: 'Verify Android directory and gradlew'
+            displayName: 'Setup Android build environment'
+            continueOnError: true
           - script: |
+              echo "Attempting to generate Gradle wrapper directly:"
               cd android
-              if exist gradlew (
-                echo "Setting permissions for gradlew..."
-                attrib -R gradlew
+              gradle wrapper
+            displayName: 'Generate Gradle wrapper'
+            continueOnError: true
+          - script: |
+              echo "Final check for gradlew:"
+              dir /s /b gradlew
+              if exist android\gradlew (
+                echo "gradlew found in android directory"
+              ) else (
+                echo "gradlew still not found!"
               )
-            displayName: 'Set gradlew permissions'
-          - task: Gradle@3
-            inputs:
-              workingDirectory: '$(Build.SourcesDirectory)/android'
-              gradleWrapperFile: '$(Build.SourcesDirectory)/android/gradlew'
-              gradleOptions: '-Xmx3072m'
-              tasks: 'assembleRelease'
-            displayName: 'Assemble Android APK'
-            condition: succeededOrFailed()
-          - task: CopyFiles@2
-            inputs:
-              contents: '**/*.apk'
-              targetFolder: '$(Build.ArtifactStagingDirectory)/apk'
-            displayName: 'Copy APKs to staging'
-            condition: succeededOrFailed()
-          - task: PublishBuildArtifacts@1
-            inputs:
-              pathToPublish: '$(Build.ArtifactStagingDirectory)/apk'
-              artifactName: 'Android_APK'
-            displayName: 'Publish APK artifact'
-            condition: succeededOrFailed()
+            displayName: 'Verify gradlew existence'
 
   # - stage: BuildiOS
   #   displayName: "Build iOS App"
